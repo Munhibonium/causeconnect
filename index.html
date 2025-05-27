@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CauseConnect - Social Platform for Causes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cause-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        .credit-badge::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 15px;
+            height: 15px;
+            background-color: #10B981;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-hands-helping text-green-500 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-green-600">CauseConnect</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" class="border-green-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Home
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Explore Causes
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            My Causes
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <div class="relative ml-3">
+                        <div class="flex items-center space-x-4">
+                            <div class="credit-badge bg-white rounded-full px-3 py-1 flex items-center shadow-sm">
+                                <i class="fas fa-coins text-yellow-500 mr-1"></i>
+                                <span class="font-medium">1,250</span>
+                            </div>
+                            <button onclick="toggleModal('createCauseModal')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium transition duration-150 ease-in-out">
+                                Create Cause
+                            </button>
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
+                                    <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+                                    <span class="text-sm font-medium">John Doe</span>
+                                </button>
+                                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Modal (hidden by default) -->
+    <div class="fixed z-50 inset-0 overflow-y-auto hidden" id="loginModal">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-sign-in-alt text-green-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Sign in to your account
+                            </h3>
+                            <div class="mt-4">
+                                <form id="loginForm" action="auth.php" method="POST">
+                                    <input type="hidden" name="action" value="login">
+                                    <div class="mb-4">
+                                        <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                                        <input type="email" id="login-email" name="email" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                                        <input type="password" id="login-password" name="password" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center">
+                                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                                                Remember me
+                                            </label>
+                                        </div>
+                                        <div class="text-sm">
+                                            <a href="#" class="font-medium text-green-600 hover:text-green-500">
+                                                Forgot your password?
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" form="loginForm" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Sign in
+                    </button>
+                    <button type="button" onclick="toggleModal('loginModal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+                <div class="bg-gray-50 px-4 py-4 border-t border-gray-200 sm:px-6">
+                    <p class="text-xs text-gray-500 text-center">
+                        Don't have an account? <button onclick="toggleModal('loginModal'); toggleModal('registerModal')" class="font-medium text-green-600 hover:text-green-500">Sign up</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal (hidden by default) -->
+    <div class="fixed z-50 inset-0 overflow-y-auto hidden" id="registerModal">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-user-plus text-green-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Create a new account
+                            </h3>
+                            <div class="mt-4">
+                                <form id="registerForm" action="auth.php" method="POST">
+                                    <input type="hidden" name="action" value="register">
+                                    <div class="grid grid-cols-1 gap-y-4 gap-x-6 sm:grid-cols-6">
+                                        <div class="sm:col-span-3">
+                                            <label for="first-name" class="block text-sm font-medium text-gray-700">First name</label>
+                                            <input type="text" name="first_name" id="first-name" autocomplete="given-name" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        </div>
+                                        <div class="sm:col-span-3">
+                                            <label for="last-name" class="block text-sm font-medium text-gray-700">Last name</label>
+                                            <input type="text" name="last_name" id="last-name" autocomplete="family-name" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        </div>
+                                        <div class="sm:col-span-6">
+                                            <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                                            <input type="email" name="email" id="email" autocomplete="email" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        </div>
+                                        <div class="sm:col-span-6">
+                                            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                                            <input type="password" name="password" id="password" required minlength="8" class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        </div>
+                                        <div class="sm:col-span-6">
+                                            <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                                            <input type="password" name="confirm_password" id="confirm-password" required minlength="8" class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" form="registerForm" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Register
+                    </button>
+                    <button type="button" onclick="toggleModal('registerModal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+                <div class="bg-gray-50 px-4 py-4 border-t border-gray-200 sm:px-6">
+                    <p class="text-xs text-gray-500 text-center">
+                        Already have an account? <button onclick="toggleModal('registerModal'); toggleModal('loginModal')" class="font-medium text-green-600 hover:text-green-500">Sign in</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Trending Causes Section -->
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-900">Trending Causes</h2>
+            <a href="#" class="text-green-600 hover:text-green-700 font-medium">View all</a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="causesContainer">
+            <!-- Causes will be loaded here via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Create Cause Modal (hidden by default) -->
+    <div class="fixed z-50 inset-0 overflow-y-auto hidden" id="createCauseModal">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-plus text-green-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Create a New Cause
+                            </h3>
+                            <div class="mt-4">
+                                <form id="createCauseForm" action="causes.php" method="POST" enctype="multipart/form-data">
+                                    <input type="hidden" name="action" value="create">
+                                    <div class="mb-4">
+                                        <label for="cause-title" class="block text-sm font-medium text-gray-700">Cause Title</label>
+                                        <input type="text" name="title" id="cause-title" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="cause-category" class="block text-sm font-medium text-gray-700">Category</label>
+                                        <select name="category" id="cause-category" required class="mt-1 form-input block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md">
+                                            <option value="">Select a category</option>
+                                            <option value="education">Education</option>
+                                            <option value="environment">Environment</option>
+                                            <option value="healthcare">Healthcare</option>
+                                            <option value="poverty">Poverty</option>
+                                            <option value="animal_welfare">Animal Welfare</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="cause-description" class="block text-sm font-medium text-gray-700">Description</label>
+                                        <textarea name="description" id="cause-description" rows="3" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="cause-goal" class="block text-sm font-medium text-gray-700">Funding Goal ($)</label>
+                                        <input type="number" name="goal_amount" id="cause-goal" min="1" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="cause-image" class="block text-sm font-medium text-gray-700">Cover Image</label>
+                                        <input type="file" name="image" id="cause-image" accept="image/*" class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="cause-credits" class="block text-sm font-medium text-gray-700">Credits for Donors</label>
+                                        <input type="number" name="credits_per_dollar" id="cause-credits" min="1" value="10" required class="mt-1 form-input block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        <p class="mt-1 text-xs text-gray-500">Set how many credits donors will earn per dollar donated</p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" form="createCauseForm" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Create Cause
+                    </button>
+                    <button type="button" onclick="toggleModal('createCauseModal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Schema and PHP Backend Explanation -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gray-100 rounded-lg mt-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Database Integration Details</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Database Schema -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">MariaDB Database Schema</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800">Users Table</h4>
+                        <pre class="bg-gray-800 text-green-300 p-3 rounded text-sm overflow-x-auto mt-2">
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    social_credits INT DEFAULT 0,
+    profile_image VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);</pre>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800">Causes Table</h4>
+                        <pre class="bg-gray-800 text-green-300 p-3 rounded text-sm overflow-x-auto mt-2">
+CREATE TABLE causes (
+    cause_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    category ENUM('education', 'environment', 'healthcare', 'poverty', 'animal_welfare', 'other') NOT NULL,
+    goal_amount DECIMAL(10,2) NOT NULL,
+    current_amount DECIMAL(10,2) DEFAULT 0,
+    image_path VARCHAR(255),
+    credits_per_dollar INT DEFAULT 10,
+    status ENUM('active', 'completed', 'cancelled') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);</pre>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800">Donations Table</h4>
+                        <pre class="bg-gray-800 text-green-300 p-3 rounded text-sm overflow-x-auto mt-2">
+CREATE TABLE donations (
+    donation_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    cause_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    credits_earned INT NOT NULL,
+    message TEXT,
+    anonymous BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (cause_id) REFERENCES causes(cause_id)
+);</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PHP Backend -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">PHP Backend Examples</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800">Database Connection (db.php)</h4>
+                        <pre class="bg-gray-800 text-green-300 p-3 rounded text-sm overflow-x-auto mt-2">
+&lt;?php
+$host = 'localhost';
+$dbname = 'causeconnect';
+$username = 'db_user';
+$password = 'secure_password';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Could not connect to the database: " . $e->getMessage());
+}
+?&gt;</pre>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800">User Registration (auth.php)</h4>
+                        <pre class="bg-gray-800 text-green-300 p-3 rounded text-sm overflow-x-auto mt-2">
+&lt;?php
+require 'db.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'register') {
+    $firstName = $_POST['first_name'];
+    $lastName = $_POST['last_name'];
+    $email = $_POST['email'];
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    
+    try {
+        $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password_hash) 
+                              VALUES (?, ?, ?, ?)");
+        $stmt->execute([$firstName, $lastName, $email, $password]);
+        
+        // Start session and log user in
+        session_start();
+        $_SESSION['user_id'] = $pdo->lastInsertId();
+        $_SESSION['email'] = $email;
+        
+        echo json_encode(['success' => true]);
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'error' => 'Email already exists']);
+    }
+}
+?&gt;</pre>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800">Create Cause (causes.php)</h4>
+                        <pre class="bg-gray-800 text-green-300 p-3 rounded text-sm overflow-x-auto mt-2">
+&lt;?php
+require 'db.php';
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    die(json_encode(['success' => false, 'error' => 'Not authenticated']));
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'create') {
+    $userId = $_SESSION['user_id'];
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $category = $_POST['category'];
+    $goalAmount = $_POST['goal_amount'];
+    $creditsPerDollar = $_POST['credits_per_dollar'];
+    
+    // Handle file upload
+    $imagePath = null;
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = 'uploads/causes/';
+        $imageName = uniqid() . '_' . basename($_FILES['image']['name']);
+        $imagePath = $uploadDir . $imageName;
+        move_uploaded_file($_FILES['image']['tmp_name'], $imagePath);
+    }
+    
+    try {
+        $stmt = $pdo->prepare("INSERT INTO causes 
+                              (user_id, title, description, category, goal_amount, image_path, credits_per_dollar) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$userId, $title, $description, $category, $goalAmount, $imagePath, $creditsPerDollar]);
+        
+        echo json_encode(['success' => true, 'cause_id' => $pdo->lastInsertId()]);
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+}
+?&gt;</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Dynamic Content -->
+    <script>
+        // Toggle modal visibility
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+        }
+
+        // Sample data - in a real app, this would come from the database via AJAX
+        const sampleCauses = [
+            {
+                id: 1,
+                title: "Build a School in Rural Kenya",
+                description: "Help us construct a primary school for 200 children in a remote village with no access to education.",
+                category: "education",
+                goalAmount: 15000,
+                currentAmount: 8420,
+                imageUrl: "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                creator: {
+                    name: "Sarah Johnson",
+                    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                },
+                credits: 50,
+                status: "active"
+            },
+            {
+                id: 2,
+                title: "Ocean Plastic Cleanup Initiative",
+                description: "Support our efforts to remove plastic waste from coastal areas and protect marine life.",
+                category: "environment",
+                goalAmount: 30000,
+                currentAmount: 23150,
+                imageUrl: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                creator: {
+                    name: "David Chen",
+                    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                },
+                credits: 30,
+                status: "active"
+            },
+            {
+                id: 3,
+                title: "COVID-19 Relief for India",
+                description: "Provide oxygen concentrators and medical supplies to hospitals overwhelmed by COVID-19 patients.",
+                category: "healthcare",
+                goalAmount: 50000,
+                currentAmount: 42890,
+                imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                creator: {
+                    name: "Priya Patel",
+                    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                },
+                credits: 75,
+                status: "active"
+            }
+        ];
+
+        // Function to render causes
+        function renderCauses() {
+            const container = document.getElementById('causesContainer');
+            container.innerHTML = '';
+            
+            sampleCauses.forEach(cause => {
+                const progress = (cause.currentAmount / cause.goalAmount) * 100;
+                const progressColor = getProgressColor(cause.category);
+                
+                const causeCard = document.createElement('div');
+                causeCard.className = 'bg-white rounded-lg shadow-md overflow-hidden cause-card transition duration-300 ease-in-out';
+                causeCard.innerHTML = `
+                    <div class="relative h-48 overflow-hidden">
+                        <img class="w-full h-full object-cover" src="${cause.imageUrl}" alt="${cause.title}">
+                        <div class="absolute top-2 right-2 ${getCategoryColorClass(cause.category)} text-white text-xs font-bold px-2 py-1 rounded-full">
+                            <i class="${getCategoryIcon(cause.category)} mr-1"></i> ${getCategoryLabel(cause.category)}
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold ${getCategoryTextColorClass(cause.category)}">${cause.category.toUpperCase()}</span>
+                            <div class="flex items-center text-yellow-500 text-sm">
+                                <i class="fas fa-coins mr-1"></i>
+                                <span>+${cause.credits} credits</span>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">${cause.title}</h3>
+                        <p class="text-gray-600 text-sm mb-4">${cause.description}</p>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm text-gray-500 mb-1">
+                                <span>Raised: $${cause.currentAmount.toLocaleString()}</span>
+                                <span>Goal: $${cause.goalAmount.toLocaleString()}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full progress-bar ${progressColor}" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <img class="w-8 h-8 rounded-full" src="${cause.creator.avatar}" alt="${cause.creator.name}">
+                                <span class="ml-2 text-sm font-medium text-gray-700">${cause.creator.name}</span>
+                            </div>
+                            <button class="${getCategoryButtonClass(cause.category)} hover:${getCategoryButtonHoverClass(cause.category)} text-white px-4 py-2 rounded-full text-sm font-medium transition duration-150 ease-in-out">
+                                Donate
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(causeCard);
+            });
+        }
+
+        // Helper functions for cause styling
+        function getCategoryColorClass(category) {
+            const colors = {
+                education: 'bg-green-500',
+                environment: 'bg-blue-500',
+                healthcare: 'bg-red-500',
+                poverty: 'bg-purple-500',
+                animal_welfare: 'bg-yellow-500',
+                other: 'bg-gray-500'
+            };
+            return colors[category] || 'bg-gray-500';
+        }
+
+        function getCategoryTextColorClass(category) {
+            const colors = {
+                education: 'text-green-600',
+                environment: 'text-blue-600',
+                healthcare: 'text-red-600',
+                poverty: 'text-purple-600',
+                animal_welfare: 'text-yellow-600',
+                other: 'text-gray-600'
+            };
+            return colors[category] || 'text-gray-600';
+        }
+
+        function getCategoryButtonClass(category) {
+            const colors = {
+                education: 'bg-green-500',
+                environment: 'bg-blue-500',
+                healthcare: 'bg-red-500',
+                poverty: 'bg-purple-500',
+                animal_welfare: 'bg-yellow-500',
+                other: 'bg-gray-500'
+            };
+            return colors[category] || 'bg-gray-500';
+        }
+
+        function getCategoryButtonHoverClass(category) {
+            const colors = {
+                education: 'bg-green-600',
+                environment: 'bg-blue-600',
+                healthcare: 'bg-red-600',
+                poverty: 'bg-purple-600',
+                animal_welfare: 'bg-yellow-600',
+                other: 'bg-gray-600'
+            };
+            return colors[category] || 'bg-gray-600';
+        }
+
+        function getProgressColor(category) {
+            const colors = {
+                education: 'bg-green-500',
+                environment: 'bg-blue-500',
+                healthcare: 'bg-red-500',
+                poverty: 'bg-purple-500',
+                animal_welfare: 'bg-yellow-500',
+                other: 'bg-gray-500'
+            };
+            return colors[category] || 'bg-gray-500';
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                education: 'fas fa-graduation-cap',
+                environment: 'fas fa-leaf',
+                healthcare: 'fas fa-heartbeat',
+                poverty: 'fas fa-hands-helping',
+                animal_welfare: 'fas fa-paw',
+                other: 'fas fa-hands-helping'
+            };
+            return icons[category] || 'fas fa-hands-helping';
+        }
+
+        function getCategoryLabel(category) {
+            const labels = {
+                education: 'Education',
+                environment: 'Environment',
+                healthcare: 'Healthcare',
+                poverty: 'Poverty',
+                animal_welfare: 'Animals',
+                other: 'Other'
+            };
+            return labels[category] || 'Other';
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCauses();
+            
+            // Form submission handlers
+            document.getElementById('loginForm')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // In a real app, this would be an AJAX call to the server
+                alert('Login functionality would be implemented here');
+                toggleModal('loginModal');
+            });
+            
+            document.getElementById('registerForm')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // In a real app, this would be an AJAX call to the server
+                alert('Registration functionality would be implemented here');
+                toggleModal('registerModal');
+            });
+            
+            document.getElementById('createCauseForm')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // In a real app, this would be an AJAX call to the server
+                alert('Cause creation functionality would be implemented here');
+                toggleModal('createCauseModal');
+                // Add the new cause to the list and re-render
+                sampleCauses.unshift({
+                    id: sampleCauses.length + 1,
+                    title: document.getElementById('cause-title').value,
+                    description: document.getElementById('cause-description').value,
+                    category: document.getElementById('cause-category').value,
+                    goalAmount: parseFloat(document.getElementById('cause-goal').value),
+                    currentAmount: 0,
+                    imageUrl: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+                    creator: {
+                        name: "John Doe",
+                        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                    },
+                    credits: parseInt(document.getElementById('cause-credits').value),
+                    status: "active"
+                });
+                renderCauses();
+            });
+        });
+    </script>
+</body>
+</html>
